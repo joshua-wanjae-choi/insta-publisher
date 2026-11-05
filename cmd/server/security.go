@@ -1,7 +1,12 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
 	"crypto/subtle"
+	"encoding/base32"
+	"encoding/binary"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -105,6 +110,42 @@ func (sg *SecurityGuard) RecordSuccess(r *http.Request) {
 // SafeCompare : [3번 전략] 타이밍 공격 방지 (상수 시간 문자열 비교)
 func SafeCompare(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
+
+// ValidateTOTP validates a standard Google Authenticator 6-digit TOTP token (RFC 6238)
+func ValidateTOTP(secret, passcode string) bool {
+	secret = strings.ToUpper(strings.ReplaceAll(secret, " ", ""))
+	if secret == "" || len(passcode) != 6 {
+		return false
+	}
+
+	key, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(secret)
+	if err != nil {
+		key, err = base32.StdEncoding.DecodeString(secret)
+		if err != nil {
+			return false
+		}
+	}
+
+	currentStep := time.Now().Unix() / 30
+	// 허용 오차: 직전(-1), 현재(0), 직후(+1) 30초 단위
+	for i := int64(-1); i <= 1; i++ {
+		step := currentStep + i
+		buf := make([]byte, 8)
+		binary.BigEndian.PutUint64(buf, uint64(step))
+
+		mac := hmac.New(sha1.New, key)
+		mac.Write(buf)
+		sum := mac.Sum(nil)
+
+		offset := sum[len(sum)-1] & 0x0f
+		code := (binary.BigEndian.Uint32(sum[offset:offset+4]) & 0x7fffffff) % 1000000
+		formattedCode := fmt.Sprintf("%06d", code)
+		if formattedCode == passcode {
+			return true
+		}
+	}
+	return false
 }
 
 func (sg *SecurityGuard) cleanup() {

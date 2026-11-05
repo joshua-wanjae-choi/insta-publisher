@@ -615,8 +615,18 @@
   <div id="loginSection" style="display: none; max-width: 320px; margin: 60px auto; text-align: center;">
     <div style="font-size: 2.2rem; margin-bottom: 12px;">🔐</div>
     <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Insta Studio 로그인</h2>
-    <input type="text" id="loginUser" placeholder="아이디" value="admin" />
-    <input type="password" id="loginPass" placeholder="비밀번호" value="1234" />
+    
+    <div id="loginCredsBox">
+      <input type="text" id="loginUser" placeholder="아이디" value="admin" autocomplete="username" />
+      <input type="password" id="loginPass" placeholder="비밀번호" value="1234" autocomplete="current-password" />
+    </div>
+
+    <!-- 구글 OTP 6자리 입력란 (2단계 활성화 시 자동 표시) -->
+    <div id="mfaInputBox" style="display: none; margin-bottom: 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 12px;">
+      <div style="font-size: 12px; font-weight: 700; color: #60a5fa; margin-bottom: 6px;">구글 OTP 6자리 번호</div>
+      <input type="text" id="loginMFA" placeholder="000000" maxlength="6" inputmode="numeric" style="text-align: center; letter-spacing: 6px; font-size: 18px; font-weight: bold; margin-bottom: 0;" />
+    </div>
+
     <button id="loginBtn" class="btn btn-primary" onclick="handleLogin()">로그인하기</button>
   </div>
 
@@ -887,20 +897,39 @@
     }
   }
 
+  let isMFARequired = false;
+
   async function handleLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
+    const mfa = document.getElementById('loginMFA').value.trim();
     const btn = document.getElementById('loginBtn');
     btn.disabled = true;
-    btn.innerText = '로그인 중...';
+    btn.innerText = '인증 확인 중...';
+
+    const payload = { username: u, password: p };
+    if (isMFARequired || mfa) {
+      payload.mfa_code = mfa;
+    }
 
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: u, password: p })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
+
+      // 202 Accepted: 구글 OTP 6자리 요구
+      if (res.status === 202 || data.mfa_required) {
+        isMFARequired = true;
+        document.getElementById('mfaInputBox').style.display = 'block';
+        document.getElementById('loginMFA').focus();
+        showToast('구글 OTP 6자리 번호를 입력하세요');
+        btn.innerText = 'OTP 인증 완료하기';
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || '로그인 실패');
 
       showToast('로그인 성공!');
@@ -911,7 +940,9 @@
       showToast(err.message, true);
     } finally {
       btn.disabled = false;
-      btn.innerText = '로그인하기';
+      if (!isMFARequired) {
+        btn.innerText = '로그인하기';
+      }
     }
   }
 

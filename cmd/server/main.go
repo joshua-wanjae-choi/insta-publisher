@@ -37,6 +37,7 @@ type Server struct {
 	client         *igclient.Client
 	adminUser      string
 	adminPass      string
+	mfaSecret      string
 	uploadToken    string
 	baseURL        string
 	mediaDir       string
@@ -64,6 +65,7 @@ func main() {
 	if adminPass == "" {
 		adminPass = "admin1234!"
 	}
+	mfaSecret := os.Getenv("MFA_SECRET")
 	uploadToken := os.Getenv("UPLOAD_API_TOKEN")
 	if uploadToken == "" {
 		uploadToken = "gen_secret_token_123"
@@ -85,6 +87,7 @@ func main() {
 		client:         client,
 		adminUser:      adminUser,
 		adminPass:      adminPass,
+		mfaSecret:      mfaSecret,
 		uploadToken:    uploadToken,
 		baseURL:        baseURL,
 		mediaDir:       mediaDir,
@@ -137,6 +140,7 @@ func main() {
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	MFACode  string `json:"mfa_code,omitempty"`
 }
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -169,6 +173,28 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{"error": "아이디 또는 비밀번호가 올바르지 않습니다."})
 		return
+	}
+
+	// 🔐 MFA 활성화 여부 확인
+	if s.mfaSecret != "" {
+		if req.MFACode == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusAccepted) // 202 Accepted -> 프론트엔드에 OTP 입력 요구
+			json.NewEncoder(w).Encode(map[string]any{
+				"status":       "mfa_required",
+				"mfa_required": true,
+				"message":      "구글 OTP 6자리 인증번호를 입력하세요.",
+			})
+			return
+		}
+
+		if !ValidateTOTP(s.mfaSecret, req.MFACode) {
+			s.guard.RecordFailure(r)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "구글 OTP 인증번호가 올바르지 않습니다."})
+			return
+		}
 	}
 
 	s.guard.RecordSuccess(r)
