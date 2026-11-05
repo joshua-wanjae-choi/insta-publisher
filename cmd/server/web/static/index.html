@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Insta Fashion Studio</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131c2e;
+      --card-border: #1e293b;
+      --border-active: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --amber: #f59e0b;
+      --safe-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, -apple-system, "Pretendard", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      padding: 12px 12px calc(40px + var(--safe-bottom)) 12px;
+      line-height: 1.4;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 16px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 16px;
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-badge h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #f43f5e, #fb7185, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Step indicator tab */
+    .step-indicator {
+      display: flex;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+      border: 1px solid var(--card-border);
+      gap: 4px;
+    }
+    .step-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .step-tab.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    .step-tab.completed {
+      color: #38bdf8;
+    }
+
+    /* Common Card / Box */
+    .card-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .box-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Era filter tabs & Style list */
+    .era-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+    .era-tabs::-webkit-scrollbar { display: none; }
+    .era-tab {
+      flex: 0 0 auto;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .era-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .style-list-vertical {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 290px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding-right: 4px;
+    }
+    .style-item-card {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .style-item-card:active, .style-item-card.selected {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.12);
+    }
+    .style-item-card.selected .item-name {
+      color: #60a5fa;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .item-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .item-era-badge {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--amber);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .item-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .item-keywords {
+      font-size: 10px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Applied Feedback Tags (Active modifiers) */
+    .applied-tags-box {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      background: #0f172a;
+      border: 1px dashed #334155;
+      border-radius: 12px;
+    }
+    .applied-tags-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .applied-tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .active-tag {
+      font-size: 11px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--primary);
+      color: #93c5fd;
+      padding: 4px 8px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+    .active-tag-remove {
+      color: #f87171;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+    }
+    .active-tag-remove:hover {
+      color: #ef4444;
+    }
+
+    /* Input & Buttons */
+    input, textarea {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+    textarea {
+      height: 84px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-amber { background: var(--amber); color: #000; }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      font-size: 11px;
+      width: auto;
+      border-radius: 8px;
+    }
+
+    /* Quick Feedback Chips */
+    .quick-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .q-tag {
+      font-size: 11px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: #94a3b8;
+      padding: 6px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .q-tag:active, .q-tag.selected {
+      border-color: var(--primary);
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* Preset Angle Grid */
+    .angle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .angle-card {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .angle-card.selected {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+    }
+    .angle-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .angle-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+    .angle-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 11px;
+      color: var(--amber);
+      font-weight: bold;
+      display: none;
+    }
+    .angle-card.selected .angle-check { display: inline; }
+    .custom-angle-remove {
+      color: #f87171;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    /* Image Preview Cards */
+    .preview-box {
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+    }
+    .preview-box img {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Carousel Selected Multi-Images */
+    .multi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .multi-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--primary);
+    }
+    .multi-item img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      display: block;
+    }
+    .multi-order {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .multi-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    /* Gallery / Drawer of all saved images */
+    .drawer-section {
+      margin-top: 18px;
+      border-top: 1px solid var(--card-border);
+      padding-top: 16px;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .gallery-card {
+      position: relative;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .gallery-card img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-card.is-base {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4);
+    }
+    .gallery-actions {
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      background: #090d16;
+    }
+    .gallery-btn {
+      flex: 1;
+      padding: 4px 2px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .gallery-btn-use {
+      background: var(--primary);
+      color: #fff;
+    }
+    .gallery-btn-del {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      flex: 0 0 26px;
+    }
+
+    /* Multi Carousel Candidate Selection Cards */
+    .candidate-card {
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .candidate-card.in-carousel {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+    }
+    .candidate-card img {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      display: block;
+    }
+    .candidate-info {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #131c2e;
+    }
+    .candidate-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .candidate-btn-group {
+      display: flex;
+      gap: 4px;
+    }
+    .candidate-btn {
+      flex: 1;
+      padding: 7px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .btn-toggle-carousel {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+    .in-carousel .btn-toggle-carousel {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-candidate-del {
+      flex: 0 0 32px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Spinner & Toast */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      position: fixed;
+      bottom: calc(20px + var(--safe-bottom));
+      left: 16px;
+      right: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .toast.success { background: #064e3b; border: 1px solid #059669; color: #a7f3d0; display: block; }
+    .toast.error { background: #7f1d1d; border: 1px solid #dc2626; color: #fecaca; display: block; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="toast" class="toast"></div>
+
+  <!-- 0. 로그인 뷰 (로그인 안 된 경우 표시) -->
+  <div id="loginSection" style="display: none; max-width: 320px; margin: 60px auto; text-align: center;">
+    <div style="font-size: 2.2rem; margin-bottom: 12px;">🔐</div>
+    <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Insta Studio 로그인</h2>
+    <input type="text" id="loginUser" placeholder="아이디" value="admin" />
+    <input type="password" id="loginPass" placeholder="비밀번호" value="1234" />
+    <button id="loginBtn" class="btn btn-primary" onclick="handleLogin()">로그인하기</button>
+  </div>
+
+  <!-- 메인 작업 뷰 -->
+  <div id="mainSection" style="display: none;">
+    <!-- Header -->
+    <header>
+      <div class="logo-badge">
+        <span style="font-size: 1.3rem;">📸</span>
+        <h1>Insta Studio</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline" onclick="loadAll()">새로고침</button>
+        <button class="btn-outline" onclick="handleLogout()">로그아웃</button>
+      </div>
+    </header>
+
+    <!-- Step Tab Navigation -->
+    <div class="step-indicator">
+      <div id="tab-1" class="step-tab active" onclick="switchStep(1)">1. 사조선택</div>
+      <div id="tab-2" class="step-tab" onclick="switchStep(2)">2. 핑퐁보완</div>
+      <div id="tab-3" class="step-tab" onclick="switchStep(3)">3. 2~3장확장</div>
+      <div id="tab-4" class="step-tab" onclick="switchStep(4)">4. 캡션&발행</div>
+    </div>
+
+    <!-- ==================== STEP 1: 사조 / 테마 선택 ==================== -->
+    <div id="step-content-1">
+      <div class="card-box">
+        <div class="box-title">
+          <span>시대별 패션 사조 아카이브</span>
+          <span style="font-size: 11px; color: var(--accent);">1920s ~ 1990s</span>
+        </div>
+
+        <!-- 시대별 탭 필터 -->
+        <div class="era-tabs">
+          <div class="era-tab active" onclick="filterEra('ALL', this)">전체보기 (38개)</div>
+          <div class="era-tab" onclick="filterEra('1900s', this)">1900-10s 깁슨걸·서프러제트</div>
+          <div class="era-tab" onclick="filterEra('1920s', this)">1920s 코코샤넬·플래퍼</div>
+          <div class="era-tab" onclick="filterEra('1930s', this)">1930s 할리우드·디트리히</div>
+          <div class="era-tab" onclick="filterEra('1940s', this)">1940s 빅토리롤·주트슈트</div>
+          <div class="era-tab" onclick="filterEra('1950s', this)">1950s 디올뉴룩·제임스딘·오드리헵번</div>
+          <div class="era-tab" onclick="filterEra('1960s', this)">1960s 런던모즈·트위기미니·히피</div>
+          <div class="era-tab" onclick="filterEra('1970s', this)">1970s 글램록·펑크·스튜디오54</div>
+          <div class="era-tab" onclick="filterEra('1980s', this)">1980s 파워슈트·뉴로맨틱·마돈나·힙합</div>
+          <div class="era-tab" onclick="filterEra('1990s', this)">1990s 그런지·헬무트랭미니멀·클루리스</div>
+          <div class="era-tab" onclick="filterEra('2000s', this)">2000s 맥블링·인디슬리즈·하라주쿠</div>
+          <div class="era-tab" onclick="filterEra('Classic', this)">클래식 시티보이·올드머니·고프코어</div>
+        </div>
+
+        <!-- 상세 항목 리스트 -->
+        <div id="styleList" class="style-list-vertical">
+          <div style="color: var(--text-muted); font-size: 12px; padding: 10px;">사조 로딩 중...</div>
+        </div>
+
+        <input type="text" id="customInput" placeholder="추가 무드 / 디테일 (예: 비 오는 밤거리, 오버핏 트렌치코트)" />
+        
+        <button id="step1Btn" class="btn btn-accent" onclick="startInitialGeneration()">
+          📸 1차 기준 컷 생성하기
+        </button>
+
+        <!-- 생성 대기 박스 -->
+        <div id="loadingBox1" style="display: none; margin-top: 12px; padding: 14px; background: rgba(59, 130, 246, 0.08); border: 1px solid var(--border-active); border-radius: 12px; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px;">
+            <div class="spinner"></div>
+            <span style="font-size: 13px; font-weight: 700; color: #60a5fa;">맥미니에서 패션 화보 렌더링 중...</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted);">약 30~40초 소요됩니다. 완료되면 자동으로 2단계로 이동합니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 2: 최초 컷 핑퐁 보완 ==================== -->
+    <div id="step-content-2" style="display: none;">
+      <div class="card-box">
+        <div class="box-title">
+          <span>기준 컷 확인 & 보완 핑퐁</span>
+          <span id="baseStyleName" style="color: #60a5fa; font-size: 11px;"></span>
+        </div>
+
+        <div id="basePreviewBox" class="preview-box">
+          <div class="preview-badge">기준 컷 (Base Shot)</div>
+          <button class="btn-outline" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 4px 8px; color: #f87171; border-color: rgba(239,68,68,0.5); z-index: 10;" onclick="deleteCurrentBaseImage()">🗑️ 삭제</button>
+          <img id="baseImg" src="" alt="기준 이미지" />
+        </div>
+
+        <!-- 퀵 피드백 태그 -->
+        <div class="box-title" style="margin-bottom: 8px;">빠른 보완 피드백 프리셋</div>
+        <div class="quick-tags">
+          <span class="q-tag" onclick="addFeedbackTag('밤거리 네온 플래시 광 강조')">💡 플래시 광 강조</span>
+          <span class="q-tag" onclick="addFeedbackTag('더 거칠고 아날로그한 35mm 그레인 질감')">🎞️ 빈티지 필름 그레인</span>
+          <span class="q-tag" onclick="addFeedbackTag('전신 실루엣과 오버핏 디테일 강화')">🧥 오버핏 실루엣</span>
+          <span class="q-tag" onclick="addFeedbackTag('포즈를 좀 더 쿨하고 자연스러운 캔디드 스냅으로')">🕶️ 쿨한 캔디드 포즈</span>
+          <span class="q-tag" onclick="addFeedbackTag('배경을 흐린 런던/도쿄 골목길로')">🏙️ 빈티지 골목 배경</span>
+        </div>
+
+        <!-- 현재 적용 중인 보완 피드백 태그 리스트 (x로 삭제 가능) -->
+        <div id="appliedTagsContainer" class="applied-tags-box" style="display: none;">
+          <div class="applied-tags-title">
+            <span>📌 적용 중인 보완 피드백</span>
+            <span style="font-size: 10px; color: #64748b; cursor: pointer;" onclick="clearAllFeedbackTags()">전체 비우기</span>
+          </div>
+          <div id="appliedTagsList" class="applied-tags-list"></div>
+        </div>
+
+        <input type="text" id="feedbackInput" placeholder="추가 보완하고 싶은 점 직접 입력 후 [엔터] 또는 아래 버튼..." onkeydown="handleFeedbackKey(event)" />
+
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <button id="refineBtn" class="btn btn-outline" style="flex: 1;" onclick="requestRefinement()">
+            🔄 핑퐁 수정 요청
+          </button>
+          <button class="btn btn-primary" style="flex: 1.3;" onclick="confirmBaseAndNext()">
+            ✨ 이 컷 확정 & 다음 ➡️
+          </button>
+        </div>
+
+        <div id="loadingBox2" style="display: none; padding: 12px; background: rgba(59, 130, 246, 0.08); border: 1px solid var(--border-active); border-radius: 12px; text-align: center; margin-top: 8px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <div class="spinner"></div>
+            <span style="font-size: 12px; font-weight: 700; color: #60a5fa;">피드백을 반영해 새 컷 생성 중...</span>
+          </div>
+        </div>
+      </div>
+      <!-- 서버에 보관된 화보 갤러리 (삭제 & 기준 컷 지정 서랍) -->
+      <div class="card-box drawer-section">
+        <div class="box-title" style="margin-bottom: 8px;">
+          <span>📁 생성된 화보 목록 (<span id="galleryCount">0</span>)</span>
+          <span style="font-size: 11px; color: #94a3b8;">터치하여 핑퐁 기준으로 교체</span>
+        </div>
+        <div id="galleryGrid" class="gallery-grid">
+          <div style="grid-column: span 3; text-align: center; color: var(--text-muted); font-size: 11px; padding: 14px;">보관된 사진 없음</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 3: 2~3장 구도 확장 ==================== -->
+    <div id="step-content-3" style="display: none;">
+      <div class="card-box">
+        <div class="box-title">
+          <span>3. 구도 프리셋 선택 (2~3장 세트 완성)</span>
+          <span id="selectedCountBadge" style="color: var(--amber); font-size: 11px;">2개 선택됨</span>
+        </div>
+
+        <!-- 커스텀 구도 추가 인풋 -->
+        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+          <input type="text" id="customAngleInput" placeholder="직접 구도 추가 (예: 로우앵글 파워워킹, 거울 셀카 샷)..." style="margin-bottom: 0;" onkeydown="handleCustomAngleKey(event)" />
+          <button class="btn btn-outline" style="width: auto; white-space: nowrap; padding: 0 14px;" onclick="addCustomAngle()">+ 추가</button>
+        </div>
+
+        <!-- 구도 프리셋 카드 그리드 (동적 렌더링) -->
+        <div id="angleGrid" class="angle-grid"></div>
+
+        <button id="variationBtn" class="btn btn-amber" onclick="requestVariations()">
+          📸 선택한 구도로 2~3장 확장 생성
+        </button>
+
+        <div id="loadingBox3" style="display: none; padding: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); border-radius: 12px; text-align: center; margin-top: 10px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <div class="spinner" style="border-top-color: var(--amber);"></div>
+            <span style="font-size: 12px; font-weight: 700; color: #f59e0b;">구도 프리셋에 맞춰 화보 렌더링 중...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 생성된 후보 사진들 중 선택 섹션 (2단계와 유사한 레이아웃) -->
+      <div class="card-box">
+        <div class="box-title">
+          <span>확장 컷 후보 선택 (<span id="carouselSelectedBadge" style="color: var(--accent);">1</span>개 선택됨)</span>
+          <button class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 11px;" onclick="proceedToStep4()">
+            선택 완료 & 캡션 작성 ➡️
+          </button>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+          인스타그램에 캐러셀(슬라이드)로 함께 올릴 사진들을 체크하세요. (최대 4장)
+        </div>
+
+        <div id="variationCandidatesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <!-- 동적 렌더링 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 4: 캡션 / 해시태그 & 발행 ==================== -->
+    <div id="step-content-4" style="display: none;">
+      <div class="card-box">
+        <div class="box-title">
+          <span>4. 포스트 설명 & 해시태그</span>
+          <span style="color: var(--accent); font-size: 11px;">인스타 규격 자동완성</span>
+        </div>
+
+        <!-- 최종 포스팅할 이미지 썸네일 바 -->
+        <div id="finalThumbs" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;"></div>
+
+        <div class="box-title" style="margin-bottom: 6px;">캡션 본문 (영문 에디토리얼 무드)</div>
+        <textarea id="captionBody" placeholder="인스타그램 본문..." style="height: 110px;"></textarea>
+
+        <div class="box-title" style="margin-bottom: 6px;">해시태그 (소문자 & 3~4개 필수 해시값)</div>
+        <input type="text" id="captionHashtags" placeholder="#minimalism #1996 #newyork" />
+
+        <button id="finalPublishBtn" class="btn btn-primary" style="margin-top: 8px;" onclick="publishPost()">
+          🚀 인스타그램에 바로 올리기 (캐러셀 발행)
+        </button>
+
+        <button class="btn btn-danger" style="margin-top: 8px;" onclick="resetWorkflow()">
+          🔄 처음부터 다시 만들기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let styles = [];
+  let drafts = [];
+  let currentStep = 1;
+
+  let selectedStyle = null;
+  let baseDraft = null;
+  let carouselDrafts = [];
+  let selectedAngles = [
+    'Full-body candid runway walk, head to toe',
+    'Extreme close-up on fabric texture, stitching and accessories'
+  ];
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.className = 'toast ' + (isError ? 'error' : 'success');
+    t.innerText = msg;
+    setTimeout(() => { t.style.display = 'none'; }, 4000);
+  }
+
+  function switchStep(step) {
+    currentStep = step;
+    if (step === 3) {
+      renderAngleGrid();
+      renderVariationCandidates();
+    }
+    if (step === 4) {
+      renderFinalThumbs();
+    }
+    for (let i = 1; i <= 4; i++) {
+      const tab = document.getElementById('tab-' + i);
+      const content = document.getElementById('step-content-' + i);
+      if (tab) {
+        tab.className = 'step-tab' + (i === step ? ' active' : (i < step ? ' completed' : ''));
+      }
+      if (content) {
+        content.style.display = (i === step) ? 'block' : 'none';
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function init() {
+    renderAngleGrid();
+    try {
+      const res = await fetch('/api/drafts');
+      if (res.status === 401) {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('mainSection').style.display = 'none';
+        return;
+      }
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('mainSection').style.display = 'block';
+      loadAll();
+    } catch (e) {
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('mainSection').style.display = 'none';
+    }
+  }
+
+  async function handleLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerText = '로그인 중...';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '로그인 실패');
+
+      showToast('로그인 성공!');
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('mainSection').style.display = 'block';
+      loadAll();
+    } catch (err) {
+      showToast(err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '로그인하기';
+    }
+  }
+
+  async function loadAll() {
+    await Promise.all([loadStyles(), loadDrafts()]);
+  }
+
+  async function loadStyles() {
+    try {
+      const res = await fetch('/api/styles');
+      if (!res.ok) return;
+      styles = await res.json();
+      renderStyles();
+    } catch (e) {}
+  }
+
+  let currentEra = 'ALL';
+
+  function filterEra(era, tabEl) {
+    currentEra = era;
+    document.querySelectorAll('.era-tab').forEach(t => t.classList.remove('active'));
+    if (tabEl) tabEl.classList.add('active');
+    renderStyles();
+  }
+
+  function renderStyles() {
+    const list = document.getElementById('styleList');
+    list.innerHTML = '';
+
+    const filtered = (currentEra === 'ALL') 
+      ? styles 
+      : styles.filter(s => {
+          if (!s.era) return false;
+          if (currentEra === 'Classic') return s.era === 'Classic';
+          if (currentEra === '1900s') return s.era.startsWith('1900') || s.era.startsWith('1910');
+          return s.era.includes(currentEra.substring(0, 4));
+        });
+
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'style-item-card' + (selectedStyle && selectedStyle.id === item.id ? ' selected' : '');
+      card.onclick = () => {
+        selectedStyle = item;
+        renderStyles();
+      };
+
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-name">${item.name}</span>
+          <span class="item-era-badge">${item.era || 'Vintage'}</span>
+        </div>
+        <div class="item-desc">${item.desc}</div>
+        ${item.keywords ? `<div class="item-keywords">🔑 ${item.keywords}</div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+
+    if (!selectedStyle && filtered.length > 0) {
+      selectedStyle = filtered[0];
+    }
+  }
+
+  async function loadDrafts() {
+    try {
+      const res = await fetch('/api/drafts');
+      if (!res.ok) return;
+      drafts = await res.json();
+      if (!baseDraft && drafts.length > 0) {
+        baseDraft = drafts[0];
+        updateBasePreview();
+      }
+      renderGallery();
+    } catch (e) {}
+  }
+
+  function renderGallery() {
+    const grid = document.getElementById('galleryGrid');
+    const countEl = document.getElementById('galleryCount');
+    if (!grid) return;
+    if (countEl) countEl.innerText = drafts.length;
+
+    grid.innerHTML = '';
+    if (drafts.length === 0) {
+      grid.innerHTML = '<div style="grid-column: span 3; text-align: center; color: var(--text-muted); font-size: 11px; padding: 14px;">보관된 사진 없음</div>';
+      return;
+    }
+
+    drafts.forEach(d => {
+      const card = document.createElement('div');
+      const isBase = baseDraft && (baseDraft.id === d.id || baseDraft.ID === d.id);
+      card.className = 'gallery-card' + (isBase ? ' is-base' : '');
+
+      let previewSrc = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      card.innerHTML = `
+        <img src="${previewSrc}?t=${Date.now()}" alt="화보" />
+        <div class="gallery-actions">
+          <button class="gallery-btn gallery-btn-use" onclick="setAsBaseDraft('${d.id || d.ID}')">
+            ${isBase ? '✓ 현재 기준' : '⚡ 핑퐁 기준으로'}
+          </button>
+          <button class="gallery-btn gallery-btn-del" onclick="deleteServerDraft('${d.id || d.ID}')">
+            🗑️
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function setAsBaseDraft(draftId) {
+    const target = drafts.find(d => (d.id || d.ID) === draftId);
+    if (!target) return;
+    baseDraft = target;
+    carouselDrafts = [baseDraft];
+    updateBasePreview();
+    extractCaptionParts(baseDraft.caption);
+    renderGallery();
+    renderVariationCandidates();
+    showToast('선택한 이미지가 핑퐁 기준 컷으로 지정되었습니다!');
+    switchStep(2);
+  }
+
+  async function deleteServerDraft(draftId) {
+    if (!confirm('이 이미지를 서버에서 완전히 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch('/api/drafts/' + draftId, { method: 'DELETE' });
+      if (!res.ok) throw new Error('삭제 실패');
+      showToast('이미지가 서버에서 삭제되었습니다.');
+
+      // 삭제된 이미지가 현재 기준 컷이면 교체
+      if (baseDraft && (baseDraft.id === draftId || baseDraft.ID === draftId)) {
+        baseDraft = null;
+      }
+      carouselDrafts = carouselDrafts.filter(d => (d.id || d.ID) !== draftId);
+
+      await loadDrafts();
+      if (!baseDraft && drafts.length > 0) {
+        baseDraft = drafts[0];
+        updateBasePreview();
+      }
+      renderVariationCandidates();
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  async function deleteCurrentBaseImage() {
+    if (!baseDraft) return showToast('삭제할 기준 컷이 없습니다', true);
+    await deleteServerDraft(baseDraft.id || baseDraft.ID);
+  }
+
+  async function startInitialGeneration() {
+    if (!selectedStyle) return showToast('패션 사조를 선택하세요', true);
+
+    const custom = document.getElementById('customInput').value.trim();
+    const btn = document.getElementById('step1Btn');
+    const loading = document.getElementById('loadingBox1');
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    const prevCount = drafts.length;
+
+    try {
+      const res = await fetch('/api/generate-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'initial',
+          style_id: selectedStyle.id,
+          style_name: selectedStyle.name,
+          custom_prompt: custom,
+          candidate_count: 1
+        })
+      });
+      if (!res.ok) throw new Error('주문 실패');
+
+      showToast('맥미니로 최초 컷 생성 요청 완료!');
+
+      let elapsed = 0;
+      const timer = setInterval(async () => {
+        elapsed += 3;
+        if (elapsed > 120) {
+          clearInterval(timer);
+          btn.disabled = false;
+          loading.style.display = 'none';
+          showToast('생성 시간 초과. 다시 시도해주세요.', true);
+          return;
+        }
+
+        const dRes = await fetch('/api/drafts');
+        if (dRes.ok) {
+          const list = await dRes.json();
+          if (list.length > prevCount) {
+            clearInterval(timer);
+            btn.disabled = false;
+            loading.style.display = 'none';
+            drafts = list;
+            baseDraft = drafts[0];
+            carouselDrafts = [baseDraft];
+            updateBasePreview();
+            extractCaptionParts(baseDraft.caption);
+            showToast('🎉 최초 컷 생성 완료! 2단계로 이동합니다.');
+            switchStep(2);
+          }
+        }
+      }, 3000);
+
+    } catch (e) {
+      btn.disabled = false;
+      loading.style.display = 'none';
+      showToast(e.message, true);
+    }
+  }
+
+  function updateBasePreview() {
+    if (!baseDraft) return;
+    const img = document.getElementById('baseImg');
+    const nameSpan = document.getElementById('baseStyleName');
+    let previewSrc = baseDraft.preview_url.startsWith('http') ? (new URL(baseDraft.preview_url).pathname) : baseDraft.preview_url;
+    // 브라우저 이미지 캐시 방지용 쿼리스트링 추가
+    img.src = previewSrc + '?t=' + Date.now();
+    if (nameSpan && selectedStyle) nameSpan.innerText = selectedStyle.name;
+  }
+
+  // 보완 피드백 태그 관리 (x로 개별 제거 가능)
+  let activeFeedbackTags = [];
+
+  function addFeedbackTag(text) {
+    if (!text) return;
+    text = text.trim();
+    if (!activeFeedbackTags.includes(text)) {
+      activeFeedbackTags.push(text);
+      renderAppliedFeedbackTags();
+    }
+  }
+
+  function removeFeedbackTag(idx) {
+    activeFeedbackTags.splice(idx, 1);
+    renderAppliedFeedbackTags();
+  }
+
+  function clearAllFeedbackTags() {
+    activeFeedbackTags = [];
+    renderAppliedFeedbackTags();
+  }
+
+  function renderAppliedFeedbackTags() {
+    const box = document.getElementById('appliedTagsContainer');
+    const list = document.getElementById('appliedTagsList');
+    if (!box || !list) return;
+
+    if (activeFeedbackTags.length === 0) {
+      box.style.display = 'none';
+      list.innerHTML = '';
+      return;
+    }
+
+    box.style.display = 'block';
+    list.innerHTML = '';
+    activeFeedbackTags.forEach((tag, idx) => {
+      const el = document.createElement('span');
+      el.className = 'active-tag';
+      el.innerHTML = `
+        <span>${tag}</span>
+        <span class="active-tag-remove" onclick="removeFeedbackTag(${idx})">✕</span>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  function handleFeedbackKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if (val) {
+        addFeedbackTag(val);
+        e.target.value = '';
+      }
+    }
+  }
+
+  async function requestRefinement() {
+    // 텍스트 인풋에 적혀있는 내용이 있으면 태그에 자동 추가
+    const inputVal = document.getElementById('feedbackInput').value.trim();
+    if (inputVal) {
+      addFeedbackTag(inputVal);
+      document.getElementById('feedbackInput').value = '';
+    }
+
+    if (activeFeedbackTags.length === 0) {
+      return showToast('적용할 보완 피드백을 선택하거나 입력하세요', true);
+    }
+
+    const fullFeedback = activeFeedbackTags.join(', ');
+
+    const btn = document.getElementById('refineBtn');
+    const loading = document.getElementById('loadingBox2');
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    const prevCount = drafts.length;
+
+    try {
+      const res = await fetch('/api/generate-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'refine',
+          style_id: selectedStyle ? selectedStyle.id : 'custom',
+          style_name: selectedStyle ? selectedStyle.name : 'Vintage Fashion',
+          custom_prompt: document.getElementById('customInput').value,
+          feedback: fullFeedback,
+          candidate_count: 1
+        })
+      });
+      if (!res.ok) throw new Error('핑퐁 요청 실패');
+
+      showToast(`피드백 [${fullFeedback}] 반영 렌더링 시작!`);
+
+      let elapsed = 0;
+      const timer = setInterval(async () => {
+        elapsed += 3;
+        if (elapsed > 120) {
+          clearInterval(timer);
+          btn.disabled = false;
+          loading.style.display = 'none';
+          return;
+        }
+
+        const dRes = await fetch('/api/drafts');
+        if (dRes.ok) {
+          const list = await dRes.json();
+          if (list.length > prevCount) {
+            clearInterval(timer);
+            btn.disabled = false;
+            loading.style.display = 'none';
+            drafts = list;
+            baseDraft = drafts[0];
+            carouselDrafts[0] = baseDraft;
+            updateBasePreview();
+            extractCaptionParts(baseDraft.caption);
+            showToast('✨ 보완된 새 컷이 반영되었습니다!');
+          }
+        }
+      }, 3000);
+
+    } catch (e) {
+      btn.disabled = false;
+      loading.style.display = 'none';
+      showToast(e.message, true);
+    }
+  }
+
+  // 10가지 이상의 전문 패션 화보 구도 프리셋
+  let defaultAngles = [
+    { title: '🚶 전신 런웨이/워킹', desc: '착장 전체 비율 & 실루엣', prompt: 'Full-body candid runway walk, head to toe' },
+    { title: '🔍 원단/소재 클로즈업', desc: '가죽/캐시미어 원단 질감', prompt: 'Extreme close-up on fabric texture, stitching and accessories' },
+    { title: '👤 상반신 캔디드 스냅', desc: '표정 및 넥라인/재킷 상의', prompt: 'Medium bust shot candid expression, natural framing' },
+    { title: '💫 무빙 / 모션 블러', desc: '역동적인 90년대 스냅 감성', prompt: 'Atmospheric motion blur walking shot, dynamic editorial mood' },
+    { title: '👠 슈즈 & 헴라인 디테일', desc: '신발과 바지 밑단 핏', prompt: 'Low-angle close-up on footwear and trouser hemline on street pavement' },
+    { title: '🔄 뒤돌아보는 오버숄더', desc: '백 실루엣과 등판 디테일', prompt: 'Back view looking back over the shoulder, highlighting coat back design' },
+    { title: '☕ 카페/거리 착석 샷', desc: '자연스럽게 앉아있는 룩', prompt: 'Effortless sitting pose at an outdoor vintage café chair or curb' },
+    { title: '📐 로우앵글 파워 샷', desc: '웅장하고 슬림한 하이패션', prompt: 'Dramatic low-angle worm-eye view emphasizing tall power silhouette' },
+    { title: '🪞 거울/유리창 반사 샷', desc: '감성적인 쇼윈도 리플렉션', prompt: 'Artistic candid shot with glass window reflection in vintage shop' },
+    { title: '🕶️ 액세서리 & 주얼리 컷', desc: '선글라스, 시계, 가방 중심', prompt: 'Focus on luxury accessories, sunglasses and handbag styling' }
+  ];
+
+  let customAngles = [];
+
+  function renderAngleGrid() {
+    const grid = document.getElementById('angleGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const all = [...defaultAngles, ...customAngles];
+    all.forEach(a => {
+      const isSelected = selectedAngles.includes(a.prompt);
+      const card = document.createElement('div');
+      card.className = 'angle-card' + (isSelected ? ' selected' : '');
+      card.onclick = () => toggleAnglePrompt(a.prompt);
+
+      card.innerHTML = `
+        <div class="angle-title">
+          <span>${a.title}</span>
+          ${a.isCustom ? `<span class="custom-angle-remove" onclick="removeCustomAngle(event, '${a.prompt}')">✕</span>` : ''}
+        </div>
+        <div class="angle-desc">${a.desc}</div>
+        <span class="angle-check">✓</span>
+      `;
+      grid.appendChild(card);
+    });
+
+    document.getElementById('selectedCountBadge').innerText = selectedAngles.length + '개 선택됨';
+  }
+
+  function toggleAnglePrompt(promptText) {
+    if (selectedAngles.includes(promptText)) {
+      selectedAngles = selectedAngles.filter(p => p !== promptText);
+    } else {
+      if (selectedAngles.length >= 3) {
+        return showToast('한 번에 최대 3개 구도까지 선택 가능합니다', true);
+      }
+      selectedAngles.push(promptText);
+    }
+    renderAngleGrid();
+  }
+
+  function addCustomAngle() {
+    const input = document.getElementById('customAngleInput');
+    const val = input.value.trim();
+    if (!val) return showToast('추가할 구도 내용을 입력하세요', true);
+
+    const exists = [...defaultAngles, ...customAngles].some(a => a.prompt === val || a.title === val);
+    if (exists) return showToast('이미 존재하는 구도입니다', true);
+
+    const newAngle = {
+      title: '✨ ' + val.substring(0, 12),
+      desc: val,
+      prompt: val,
+      isCustom: true
+    };
+    customAngles.push(newAngle);
+    if (selectedAngles.length < 3) {
+      selectedAngles.push(val);
+    }
+    input.value = '';
+    renderAngleGrid();
+    showToast('커스텀 구도가 추가되었습니다!');
+  }
+
+  function handleCustomAngleKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCustomAngle();
+    }
+  }
+
+  function removeCustomAngle(e, promptText) {
+    e.stopPropagation();
+    customAngles = customAngles.filter(a => a.prompt !== promptText);
+    selectedAngles = selectedAngles.filter(p => p !== promptText);
+    renderAngleGrid();
+  }
+
+  function confirmBaseAndNext() {
+    if (!baseDraft) return showToast('기준 컷이 없습니다', true);
+    carouselDrafts = [baseDraft];
+    renderMultiGrid();
+    renderAngleGrid();
+    switchStep(3);
+  }
+
+  async function requestVariations() {
+    if (selectedAngles.length === 0) return showToast('구도를 최소 1개 이상 선택하세요', true);
+
+    const btn = document.getElementById('variationBtn');
+    const loading = document.getElementById('loadingBox3');
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    const prevCount = drafts.length;
+
+    try {
+      const res = await fetch('/api/generate-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'variations',
+          style_id: selectedStyle ? selectedStyle.id : 'custom',
+          style_name: selectedStyle ? selectedStyle.name : 'Fashion',
+          custom_prompt: document.getElementById('customInput').value,
+          preset_angles: selectedAngles
+        })
+      });
+      if (!res.ok) throw new Error('확장 요청 실패');
+
+      showToast('구도 프리셋 화보 확장 생성 시작!');
+
+      let elapsed = 0;
+      const timer = setInterval(async () => {
+        elapsed += 3;
+        if (elapsed > 120) {
+          clearInterval(timer);
+          btn.disabled = false;
+          loading.style.display = 'none';
+          return;
+        }
+
+        const dRes = await fetch('/api/drafts');
+        if (dRes.ok) {
+          const list = await dRes.json();
+          if (list.length > prevCount) {
+            clearInterval(timer);
+            btn.disabled = false;
+            loading.style.display = 'none';
+            drafts = list;
+            
+            const addedCount = list.length - prevCount;
+            for (let i = 0; i < addedCount; i++) {
+              if (carouselDrafts.length < 4 && !carouselDrafts.some(cd => (cd.id || cd.ID) === (list[i].id || list[i].ID))) {
+                carouselDrafts.push(list[i]);
+              }
+            }
+            renderVariationCandidates();
+            renderGallery();
+            renderFinalThumbs();
+            showToast('🎉 바리에이션 사진 생성이 완료되었습니다!');
+          }
+        }
+      }, 3000);
+
+    } catch (e) {
+      btn.disabled = false;
+      loading.style.display = 'none';
+      showToast(e.message, true);
+    }
+  }
+
+  function renderVariationCandidates() {
+    const container = document.getElementById('variationCandidatesList');
+    const badge = document.getElementById('carouselSelectedBadge');
+    if (!container) return;
+    if (badge) badge.innerText = carouselDrafts.length;
+
+    container.innerHTML = '';
+    if (drafts.length === 0) {
+      container.innerHTML = '<div style="grid-column: span 2; text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px;">생성된 사진이 없습니다. 위에서 구도를 선택해 생성하세요!</div>';
+      return;
+    }
+
+    drafts.forEach((d, idx) => {
+      const draftId = d.id || d.ID;
+      const orderIdx = carouselDrafts.findIndex(cd => (cd.id || cd.ID) === draftId);
+      const inCarousel = orderIdx >= 0;
+      const isBase = baseDraft && ((baseDraft.id || baseDraft.ID) === draftId);
+
+      const card = document.createElement('div');
+      card.id = 'candidate-card-' + draftId;
+      card.className = 'candidate-card' + (inCarousel ? ' in-carousel' : '');
+
+      let previewSrc = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      card.innerHTML = `
+        <div style="position: relative;">
+          <img src="${previewSrc}" alt="후보 이미지" loading="lazy" />
+          ${isBase ? '<span style="position: absolute; top: 6px; left: 6px; background: #3b82f6; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">기준 컷</span>' : ''}
+          <span id="badge-carousel-${draftId}" style="position: absolute; top: 6px; right: 6px; background: #10b981; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: ${inCarousel ? 'inline' : 'none'};">
+            ${inCarousel ? '✓ #' + (orderIdx + 1) + '번째' : ''}
+          </span>
+        </div>
+        <div class="candidate-info">
+          <div class="candidate-meta">${d.style_id || 'Style'} #${idx + 1}</div>
+          <div class="candidate-btn-group">
+            <button id="btn-toggle-${draftId}" class="candidate-btn btn-toggle-carousel" onclick="toggleCarouselDraft('${draftId}')">
+              ${inCarousel ? '✓ #' + (orderIdx + 1) + ' 순서' : '+ 포스트에 추가'}
+            </button>
+            <button class="candidate-btn btn-candidate-del" onclick="deleteServerDraft('${draftId}')" title="삭제">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    renderFinalThumbs();
+  }
+
+  function toggleCarouselDraft(draftId) {
+    const existingIdx = carouselDrafts.findIndex(cd => (cd.id || cd.ID) === draftId);
+
+    if (existingIdx >= 0) {
+      if (carouselDrafts.length <= 1) {
+        return showToast('최소 1장의 사진은 포함되어야 합니다', true);
+      }
+      carouselDrafts.splice(existingIdx, 1);
+    } else {
+      if (carouselDrafts.length >= 4) {
+        return showToast('인스타그램 캐러셀은 한 번에 최대 4장까지 선택 가능합니다', true);
+      }
+      const target = drafts.find(d => (d.id || d.ID) === draftId);
+      if (target) {
+        // 💡 클릭한 순서대로 배열 끝에 추가 (1번째 -> 2번째 -> 3번째)
+        carouselDrafts.push(target);
+      }
+    }
+
+    // 선택 순서 번호(#1, #2, #3...)를 뱃지에 반영하기 위해 텍스트만 가볍게 갱신
+    drafts.forEach(d => {
+      const did = d.id || d.ID;
+      const oIdx = carouselDrafts.findIndex(cd => (cd.id || cd.ID) === did);
+      const isSelected = oIdx >= 0;
+
+      const card = document.getElementById('candidate-card-' + did);
+      const badge = document.getElementById('badge-carousel-' + did);
+      const btn = document.getElementById('btn-toggle-' + did);
+
+      if (card) {
+        if (isSelected) card.classList.add('in-carousel');
+        else card.classList.remove('in-carousel');
+      }
+      if (badge) {
+        badge.style.display = isSelected ? 'inline' : 'none';
+        badge.innerText = isSelected ? '✓ #' + (oIdx + 1) + '번째' : '';
+      }
+      if (btn) {
+        btn.innerText = isSelected ? '✓ #' + (oIdx + 1) + ' 순서' : '+ 포스트에 추가';
+      }
+    });
+
+    const totalBadge = document.getElementById('carouselSelectedBadge');
+    if (totalBadge) totalBadge.innerText = carouselDrafts.length;
+
+    renderFinalThumbs();
+  }
+
+  function proceedToStep4() {
+    if (carouselDrafts.length === 0) {
+      return showToast('포스팅할 사진을 최소 1장 이상 선택하세요', true);
+    }
+    switchStep(4);
+  }
+
+  function renderFinalThumbs() {
+    const container = document.getElementById('finalThumbs');
+    if (!container) return;
+    container.innerHTML = '';
+    carouselDrafts.forEach((d, idx) => {
+      const img = document.createElement('img');
+      img.src = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      img.style = 'width: 54px; height: 54px; object-fit: cover; border-radius: 8px; border: 1px solid var(--primary);';
+      container.appendChild(img);
+    });
+  }
+
+  function extractCaptionParts(rawCaption) {
+    if (!rawCaption) return;
+    let body = rawCaption;
+    let tags = '';
+
+    const hashMatch = rawCaption.match(/(#[a-z0-9_]+(?:\s*#[a-z0-9_]+)*)/i);
+    if (hashMatch) {
+      tags = hashMatch[0];
+      body = rawCaption.replace(tags, '').trim();
+    } else {
+      tags = '#vintagefashion #1998 #archives';
+    }
+
+    document.getElementById('captionBody').value = body;
+    document.getElementById('captionHashtags').value = tags.toLowerCase();
+  }
+
+  async function publishPost() {
+    if (carouselDrafts.length === 0) return showToast('업로드할 사진이 없습니다', true);
+
+    const btn = document.getElementById('finalPublishBtn');
+    btn.disabled = true;
+    btn.innerText = '인스타그램 업로드 중...';
+
+    const bodyText = document.getElementById('captionBody').value.trim();
+    const hashTags = document.getElementById('captionHashtags').value.trim();
+    const fullCaption = bodyText + (hashTags ? '\n\n' + hashTags : '');
+
+    const targetIDs = carouselDrafts.map(d => d.ID || d.id);
+
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: targetIDs,
+          caption: fullCaption
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '발행 실패');
+
+      showToast('🎉 인스타그램 업로드 성공! (ID: ' + data.media_id + ')');
+      setTimeout(() => {
+        resetWorkflow();
+      }, 2000);
+
+    } catch (e) {
+      showToast('발행 실패: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '🚀 인스타그램에 바로 올리기 (캐러셀 발행)';
+    }
+  }
+
+  function resetWorkflow() {
+    baseDraft = null;
+    carouselDrafts = [];
+    activeFeedbackTags = [];
+    renderAppliedFeedbackTags();
+    document.getElementById('customInput').value = '';
+    document.getElementById('feedbackInput').value = '';
+    document.getElementById('captionBody').value = '';
+    document.getElementById('captionHashtags').value = '';
+    loadAll();
+    switchStep(1);
+  }
+
+  async function handleLogout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.reload();
+  }
+
+  init();
+</script>
+</body>
+</html>
