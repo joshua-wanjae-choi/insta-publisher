@@ -1,0 +1,10 @@
+services:
+  app:
+    image: golang:1.26-alpine
+    working_dir: /insta-publisher
+    container_name: insta-publisher-app
+    volumes:
+      - ./:/insta-publisher
+    environment:
+      - PORT=8080
+    command: ["/insta-publisher/insta-server"]
