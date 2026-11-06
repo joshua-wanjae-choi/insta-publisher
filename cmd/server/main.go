@@ -104,8 +104,27 @@ func main() {
 	// 1. Static Web UI
 	mux.HandleFunc("/", srv.handleUI)
 
-	// 2. Public Media File Serving
-	mux.Handle("/media/", http.StripPrefix("/media/", http.FileServer(http.Dir(mediaDir))))
+	// 2. Public Media File Serving (인스타그램 크롤러 접근 허용하되, 디렉토리 인덱싱 브라우징 차단)
+	mux.HandleFunc("/media/", func(w http.ResponseWriter, r *http.Request) {
+		relPath := strings.TrimPrefix(r.URL.Path, "/media/")
+		if relPath == "" || strings.HasSuffix(relPath, "/") {
+			http.Error(w, "Access denied", http.StatusForbidden)
+			return
+		}
+		// 경로 순회(Path traversal) 방지
+		cleanPath := filepath.Clean(relPath)
+		if strings.Contains(cleanPath, "..") {
+			http.Error(w, "Access denied", http.StatusForbidden)
+			return
+		}
+		fullPath := filepath.Join(mediaDir, cleanPath)
+		fi, err := os.Stat(fullPath)
+		if err != nil || fi.IsDir() {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, fullPath)
+	})
 
 	// 3. Auth
 	mux.HandleFunc("/api/login", srv.handleLogin)
