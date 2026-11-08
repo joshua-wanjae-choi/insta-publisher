@@ -3,3 +3,5 @@ media/
 drafts.json
 insta-server
 *.exe
+node_modules/
+dist/
