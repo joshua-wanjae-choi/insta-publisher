@@ -1433,7 +1433,7 @@
   function confirmBaseAndNext() {
     if (!baseDraft) return showToast('기준 컷이 없습니다', true);
     carouselDrafts = [baseDraft];
-    renderMultiGrid();
+    renderVariationCandidates();
     renderAngleGrid();
     switchStep(3);
   }
