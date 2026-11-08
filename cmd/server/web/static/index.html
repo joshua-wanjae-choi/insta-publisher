@@ -1094,31 +1094,44 @@
   }
 
   async function startInitialGeneration() {
-    if (!selectedStyle) return showToast('패션 사조를 선택하세요', true);
+    // 사조 선택 안전 검증 (미선택 시 첫 번째 사조 자동 지정)
+    let style = selectedStyle;
+    if (!style && styles && styles.length > 0) {
+      style = styles[0];
+      selectedStyle = style;
+    }
+    if (!style) {
+      style = { id: 'vintage-default', name: 'Vintage Fashion' };
+    }
 
-    const custom = document.getElementById('customInput').value.trim();
+    const customEl = document.getElementById('customInput');
+    const custom = customEl ? customEl.value.trim() : '';
+
     const btn = document.getElementById('step1Btn');
     const loading = document.getElementById('loadingBox1');
-    btn.disabled = true;
-    loading.style.display = 'block';
-
-    const prevCount = drafts.length;
 
     try {
+      console.log('🚀 Sending /api/generate-request:', style);
       const res = await fetch('/api/generate-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'initial',
-          style_id: selectedStyle.id,
-          style_name: selectedStyle.name,
+          style_id: style.id,
+          style_name: style.name,
           custom_prompt: custom,
           candidate_count: 1
         })
       });
-      if (!res.ok) throw new Error('주문 실패');
 
-      showToast('맥미니로 최초 컷 생성 요청 완료!');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `서버 오류 (${res.status})`);
+      }
+
+      if (btn) btn.disabled = true;
+      if (loading) loading.style.display = 'block';
+      showToast('맥미니로 화보 생성 요청 성공!');
 
       let elapsed = 0;
       const timer = setInterval(async () => {
