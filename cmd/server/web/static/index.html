@@ -1035,7 +1035,7 @@
       const isBase = baseDraft && (baseDraft.id === d.id || baseDraft.ID === d.id);
       card.className = 'gallery-card' + (isBase ? ' is-base' : '');
 
-      let previewSrc = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      let previewSrc = getImageUrl(d);
       card.innerHTML = `
         <img src="${previewSrc}?t=${Date.now()}" alt="화보" />
         <div class="gallery-actions">
@@ -1169,14 +1169,27 @@
     }
   }
 
+  function getImageUrl(draft) {
+    if (!draft) return '';
+    if (draft.file_name) return '/media/' + draft.file_name;
+    if (draft.FileName) return '/media/' + draft.FileName;
+    if (draft.preview_url) {
+      return draft.preview_url.startsWith('http') ? (new URL(draft.preview_url).pathname) : draft.preview_url;
+    }
+    return '';
+  }
+
   function updateBasePreview() {
     if (!baseDraft) return;
     const img = document.getElementById('baseImg');
     const nameSpan = document.getElementById('baseStyleName');
-    let previewSrc = baseDraft.preview_url.startsWith('http') ? (new URL(baseDraft.preview_url).pathname) : baseDraft.preview_url;
-    // 브라우저 이미지 캐시 방지용 쿼리스트링 추가
-    img.src = previewSrc + '?t=' + Date.now();
-    if (nameSpan && selectedStyle) nameSpan.innerText = selectedStyle.name;
+    const src = getImageUrl(baseDraft);
+    if (img && src) {
+      img.src = src + '?t=' + Date.now();
+    }
+    if (nameSpan) {
+      nameSpan.innerText = (selectedStyle ? selectedStyle.name : '') || baseDraft.style_id || 'Vintage Fashion';
+    }
   }
 
   // 보완 피드백 태그 관리 (x로 개별 제거 가능)
@@ -1495,7 +1508,7 @@
       card.id = 'candidate-card-' + draftId;
       card.className = 'candidate-card' + (inCarousel ? ' in-carousel' : '');
 
-      let previewSrc = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      let previewSrc = getImageUrl(d);
       card.innerHTML = `
         <div style="position: relative;">
           <img src="${previewSrc}" alt="후보 이미지" loading="lazy" />
@@ -1583,7 +1596,7 @@
     container.innerHTML = '';
     carouselDrafts.forEach((d, idx) => {
       const img = document.createElement('img');
-      img.src = d.preview_url.startsWith('http') ? (new URL(d.preview_url).pathname) : d.preview_url;
+      img.src = getImageUrl(d);
       img.style = 'width: 54px; height: 54px; object-fit: cover; border-radius: 8px; border: 1px solid var(--primary);';
       container.appendChild(img);
     });
