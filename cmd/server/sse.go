@@ -78,11 +78,18 @@ func (s *Server) handleAgentStream(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "event: connected\ndata: {\"status\":\"ready\"}\n\n")
 	flusher.Flush()
 
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
 	notify := r.Context().Done()
 	for {
 		select {
 		case <-notify:
 			return
+		case <-ticker.C:
+			// Caddy 프록시 유휴 타임아웃 방지용 하트비트 핑
+			fmt.Fprint(w, ": ping\n\n")
+			flusher.Flush()
 		case msg := <-msgChan:
 			fmt.Fprint(w, msg)
 			flusher.Flush()
