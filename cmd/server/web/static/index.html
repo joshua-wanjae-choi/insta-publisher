@@ -719,7 +719,7 @@
           <span class="q-tag" onclick="addFeedbackTag('더 거칠고 아날로그한 35mm 그레인 질감')">🎞️ 빈티지 필름 그레인</span>
           <span class="q-tag" onclick="addFeedbackTag('전신 실루엣과 오버핏 디테일 강화')">🧥 오버핏 실루엣</span>
           <span class="q-tag" onclick="addFeedbackTag('포즈를 좀 더 쿨하고 자연스러운 캔디드 스냅으로')">🕶️ 쿨한 캔디드 포즈</span>
-          <span class="q-tag" onclick="addFeedbackTag('배경을 흐린 런던/도쿄 골목길로')">🏙️ 빈티지 골목 배경</span>
+          <span class="q-tag" onclick="addFeedbackTag('배경을 흐린 파리/런던 빈티지 거리로')">🏙️ 빈티지 거리 배경</span>
         </div>
 
         <!-- 현재 적용 중인 보완 피드백 태그 리스트 (x로 삭제 가능) -->
@@ -1448,6 +1448,11 @@
 
     const prevCount = drafts.length;
 
+    // 2단계에서 확정한 기준 컷의 정보와 분위기를 그대로 계승
+    const baseDesc = baseDraft ? (baseDraft.caption ? baseDraft.caption.substring(0, 200) : '') : '';
+    const initialPrompt = document.getElementById('customInput') ? document.getElementById('customInput').value : '';
+    const combinedPrompt = initialPrompt + (baseDesc ? ` (Maintain exact same model, face, outfit and aesthetic from base shot: ${baseDesc})` : '');
+
     try {
       const res = await fetch('/api/generate-request', {
         method: 'POST',
@@ -1456,7 +1461,9 @@
           type: 'variations',
           style_id: selectedStyle ? selectedStyle.id : 'custom',
           style_name: selectedStyle ? selectedStyle.name : 'Fashion',
-          custom_prompt: document.getElementById('customInput').value,
+          custom_prompt: combinedPrompt,
+          base_image_url: baseDraft ? baseDraft.preview_url : '',
+          feedback: activeFeedbackTags.join(', '),
           preset_angles: selectedAngles
         })
       });
