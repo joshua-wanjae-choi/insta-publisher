@@ -1483,7 +1483,8 @@
 
         const dRes = await fetch('/api/drafts');
         if (dRes.ok) {
-          const list = await dRes.json();
+          const raw = await dRes.json();
+          const list = Array.isArray(raw) ? raw : [];
           if (list.length > prevCount) {
             clearInterval(timer);
             btn.disabled = false;
