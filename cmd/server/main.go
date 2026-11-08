@@ -306,12 +306,45 @@ func generateRandomToken(n int) string {
 // ----------------- Handlers -----------------
 
 func (s *Server) handleUI(w http.ResponseWriter, r *http.Request) {
-	data, err := staticFS.ReadFile("web/static/index.html")
-	if err != nil {
-		http.Error(w, "UI not found", http.StatusNotFound)
+	path := strings.TrimPrefix(r.URL.Path, "/")
+	if path == "" || path == "index.html" {
+		data, err := staticFS.ReadFile("web/static/index.html")
+		if err != nil {
+			http.Error(w, "UI not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(data)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Serve assets and static files
+	filePath := filepath.Join("web/static", filepath.Clean(path))
+	data, err := staticFS.ReadFile(filePath)
+	if err != nil {
+		// SPA fallback to index.html
+		data, err = staticFS.ReadFile("web/static/index.html")
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(data)
+		return
+	}
+
+	if strings.HasSuffix(path, ".js") {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	} else if strings.HasSuffix(path, ".css") {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	} else if strings.HasSuffix(path, ".png") {
+		w.Header().Set("Content-Type", "image/png")
+	} else if strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg") {
+		w.Header().Set("Content-Type", "image/jpeg")
+	} else if strings.HasSuffix(path, ".svg") {
+		w.Header().Set("Content-Type", "image/svg+xml")
+	}
+
 	w.Write(data)
 }
 

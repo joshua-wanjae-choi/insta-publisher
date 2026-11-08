@@ -5,3 +5,6 @@ insta-server
 *.exe
 node_modules/
 dist/
+test-results/
+.test_*.log
+.test_media/
