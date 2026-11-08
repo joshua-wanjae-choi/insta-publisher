@@ -1122,6 +1122,9 @@
     const btn = document.getElementById('step1Btn');
     const loading = document.getElementById('loadingBox1');
 
+    const prevCount = (drafts || []).length;
+    const initialFirstId = (drafts && drafts.length > 0) ? (drafts[0].id || drafts[0].ID) : null;
+
     try {
       console.log('🚀 Sending /api/generate-request:', style);
       const res = await fetch('/api/generate-request', {
@@ -1158,8 +1161,11 @@
 
         const dRes = await fetch('/api/drafts');
         if (dRes.ok) {
-          const list = await dRes.json();
-          if (list.length > prevCount) {
+          const raw = await dRes.json();
+          const list = Array.isArray(raw) ? raw : [];
+          const currentFirstId = list.length > 0 ? (list[0].id || list[0].ID) : null;
+          
+          if (list.length > prevCount || (list.length > 0 && currentFirstId !== initialFirstId)) {
             clearInterval(timer);
             btn.disabled = false;
             loading.style.display = 'none';
