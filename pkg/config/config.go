@@ -22,9 +22,14 @@ func Load(envPath string) (*Config, error) {
 	}
 	_ = loadEnvFile(envPath)
 
+	accessToken := os.Getenv("GRAPH_API_ACCESS_TOKEN")
+	if accessToken == "" {
+		accessToken = os.Getenv("INSTAGRAM_ACCESS_TOKEN")
+	}
+
 	cfg := &Config{
 		InstagramAccountID:       os.Getenv("INSTAGRAM_ACCOUNT_ID"),
-		AccessToken:              os.Getenv("GRAPH_API_ACCESS_TOKEN"),
+		AccessToken:              accessToken,
 		APIVersion:               os.Getenv("GRAPH_API_VERSION"),
 		PostScheduleTime:         os.Getenv("POST_SCHEDULE_TIME"),
 		CommentCheckIntervalMins: 30,

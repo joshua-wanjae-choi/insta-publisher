@@ -149,6 +149,9 @@ func main() {
 	log.Printf("🚀 Fashion Insta-Publisher running on port %s", port)
 	log.Printf("🌐 Public Base URL: %s", baseURL)
 
+	// Start background token refresher (extends 60-day token every 15 days automatically)
+	srv.startTokenRefresher()
+
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatalf("Server exited: %v", err)
 	}
@@ -544,4 +547,50 @@ func (s *Server) loadDrafts() {
 func (s *Server) saveDrafts() {
 	data, _ := json.MarshalIndent(s.drafts, "", "  ")
 	_ = os.WriteFile(s.draftsFile, data, 0644)
+}
+
+// startTokenRefresher runs a periodic worker every 15 days to extend the 60-day token
+func (s *Server) startTokenRefresher() {
+	ticker := time.NewTicker(15 * 24 * time.Hour)
+	go func() {
+		for range ticker.C {
+			log.Println("🔄 [TokenRefresher] Attempting periodic Instagram token refresh...")
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			newToken, err := s.client.RefreshToken(ctx)
+			cancel()
+			if err != nil {
+				log.Printf("⚠️ [TokenRefresher] Failed to refresh token: %v", err)
+				continue
+			}
+
+			log.Println("✅ [TokenRefresher] Token successfully extended for another 60 days!")
+			s.updateEnvFile("GRAPH_API_ACCESS_TOKEN", newToken)
+			s.updateEnvFile("INSTAGRAM_ACCESS_TOKEN", newToken)
+		}
+	}()
+}
+
+func (s *Server) updateEnvFile(key, val string) {
+	envPath := ".env"
+	data, err := os.ReadFile(envPath)
+	if err != nil {
+		return
+	}
+
+	lines := strings.Split(string(data), "\n")
+	found := false
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, key+"=") {
+			lines[i] = fmt.Sprintf("%s=%s", key, val)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		lines = append(lines, fmt.Sprintf("%s=%s", key, val))
+	}
+
+	_ = os.WriteFile(envPath, []byte(strings.Join(lines, "\n")), 0644)
 }
