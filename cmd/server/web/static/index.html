@@ -1009,13 +1009,21 @@
     try {
       const res = await fetch('/api/drafts');
       if (!res.ok) return;
-      drafts = await res.json();
+      const data = await res.json();
+      drafts = Array.isArray(data) ? data : [];
       if (!baseDraft && drafts.length > 0) {
         baseDraft = drafts[0];
         updateBasePreview();
+      } else if (drafts.length === 0) {
+        baseDraft = null;
+        const img = document.getElementById('baseImg');
+        if (img) img.src = '';
       }
       renderGallery();
-    } catch (e) {}
+      renderVariationCandidates();
+    } catch (e) {
+      drafts = [];
+    }
   }
 
   function renderGallery() {
@@ -1075,12 +1083,16 @@
       if (baseDraft && (baseDraft.id === draftId || baseDraft.ID === draftId)) {
         baseDraft = null;
       }
-      carouselDrafts = carouselDrafts.filter(d => (d.id || d.ID) !== draftId);
+      carouselDrafts = (carouselDrafts || []).filter(d => (d.id || d.ID) !== draftId);
 
       await loadDrafts();
-      if (!baseDraft && drafts.length > 0) {
+      if (!baseDraft && drafts && drafts.length > 0) {
         baseDraft = drafts[0];
         updateBasePreview();
+      } else if (!drafts || drafts.length === 0) {
+        baseDraft = null;
+        const img = document.getElementById('baseImg');
+        if (img) img.src = '';
       }
       renderVariationCandidates();
     } catch (e) {

@@ -399,6 +399,10 @@ func (s *Server) handleGetDrafts(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
+	if s.drafts == nil {
+		json.NewEncoder(w).Encode([]Draft{})
+		return
+	}
 	json.NewEncoder(w).Encode(s.drafts)
 }
 
