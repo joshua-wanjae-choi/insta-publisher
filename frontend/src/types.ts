@@ -4,7 +4,17 @@ export interface Draft {
   preview_url: string;
   caption: string;
   style_id?: string;
+  bundle_id?: string;
+  order?: number;
   created_at: string;
+}
+
+export interface Bundle {
+  id: string;
+  caption: string;
+  style_id?: string;
+  created_at: string;
+  drafts: Draft[];
 }
 
 export interface StyleItem {

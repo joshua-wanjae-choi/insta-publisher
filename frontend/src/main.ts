@@ -19,6 +19,7 @@ import {
 } from './step3';
 import { publishPost, resetWorkflow } from './step4';
 import { switchStep } from './nav';
+import { renderBundles } from './today';
 
 let isMFARequired = false;
 
@@ -115,6 +116,7 @@ async function loadAll() {
     state.setDrafts(draftsData);
 
     renderStyles();
+    renderBundles();
     updateBasePreview();
     renderGallery();
     renderAngleGrid();
@@ -130,7 +132,7 @@ function bindEvents() {
   document.getElementById('refreshAllBtn')?.addEventListener('click', loadAll);
 
   // 탭 네비게이션
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 0; i <= 4; i++) {
     document.getElementById(`tab-${i}`)?.addEventListener('click', () => switchStep(i));
   }
 

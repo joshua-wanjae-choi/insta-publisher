@@ -16,7 +16,7 @@ export class AppState {
   ];
   customAngles: { title: string; desc: string; prompt: string }[] = [];
 
-  currentStep: number = 1;
+  currentStep: number = 0;
 
   setStyles(list: StyleItem[]) {
     this.styles = list;

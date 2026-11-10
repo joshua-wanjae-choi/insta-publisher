@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Insta Studio — 20세기 패션 화보 캐러셀 퍼블리셔</title>
-  <script type="module" crossorigin src="/assets/index-DH3zolab.js"></script>
+  <script type="module" crossorigin src="/assets/index-BwsITE2G.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-CZu2cwtH.css">
 </head>
 <body>
@@ -47,14 +47,26 @@
 
     <!-- Step Tab Navigation -->
     <div class="step-indicator">
-      <div id="tab-1" class="step-tab active">1. 사조선택</div>
+      <div id="tab-0" class="step-tab active">📅 오늘의 포스트</div>
+      <div id="tab-1" class="step-tab">1. 사조선택</div>
       <div id="tab-2" class="step-tab">2. 핑퐁보완</div>
       <div id="tab-3" class="step-tab">3. 2~3장확장</div>
       <div id="tab-4" class="step-tab">4. 캡션&발행</div>
     </div>
 
+    <!-- STEP 0: 매일 자동 생성된 번들 승인 -->
+    <div id="step-content-0">
+      <div class="card-box">
+        <div class="box-title">
+          <span>승인 대기 포스트</span>
+          <span style="font-size: 11px; color: var(--accent);">승인하면 바로 인스타에 올라갑니다</span>
+        </div>
+        <div id="bundleList"></div>
+      </div>
+    </div>
+
     <!-- STEP 1: 사조 / 테마 선택 -->
-    <div id="step-content-1">
+    <div id="step-content-1" style="display: none;">
       <div class="card-box">
         <div class="box-title">
           <span>시대별 패션 사조 아카이브</span>

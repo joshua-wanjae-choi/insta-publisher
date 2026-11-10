@@ -10,7 +10,8 @@ import (
 
 type GenerateJob struct {
 	ID             string   `json:"id"`
-	Type           string   `json:"type"` // "initial", "refine", "variations"
+	Type           string   `json:"type"` // "initial", "refine", "variations", "regenerate", "approved"
+	RecipeID       string   `json:"recipe_id,omitempty"`
 	StyleID        string   `json:"style_id"`
 	StyleName      string   `json:"style_name"`
 	Custom         string   `json:"custom_prompt,omitempty"`

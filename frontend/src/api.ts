@@ -1,4 +1,28 @@
-import type { Draft, StyleItem, GenerateJobPayload } from './types';
+import type { Draft, StyleItem, GenerateJobPayload, Bundle } from './types';
+
+export async function apiFetchBundles(): Promise<Bundle[]> {
+  const res = await fetch('/api/bundles');
+  if (!res.ok) throw new Error('포스트 목록을 불러오지 못했습니다');
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function postJSON(url: string, body: unknown): Promise<any> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `서버 오류 (${res.status})`);
+  return data;
+}
+
+export const apiApproveBundle = (bundleId: string, caption: string) =>
+  postJSON('/api/bundles/approve', { bundle_id: bundleId, caption });
+
+export const apiRegenerateBundle = (bundleId: string) =>
+  postJSON('/api/bundles/regenerate', { bundle_id: bundleId });
 
 export function getImageUrl(draft: Draft | null | undefined): string {
   if (!draft) return '';

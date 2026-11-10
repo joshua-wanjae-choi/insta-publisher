@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -29,6 +30,8 @@ type Draft struct {
 	PreviewURL string    `json:"preview_url"`
 	Caption    string    `json:"caption"`
 	StyleID    string    `json:"style_id,omitempty"`
+	BundleID   string    `json:"bundle_id,omitempty"` // daily post id from the generator, e.g. day-2026-11-12
+	Order      int       `json:"order,omitempty"`     // position inside the bundle (1-based)
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -140,6 +143,9 @@ func main() {
 	mux.HandleFunc("/api/drafts", srv.webAuth(srv.handleGetDrafts))
 	mux.HandleFunc("/api/drafts/", srv.webAuth(srv.handleDeleteDraft))
 	mux.HandleFunc("/api/publish", srv.webAuth(srv.handlePublish))
+	mux.HandleFunc("/api/bundles", srv.webAuth(srv.handleGetBundles))
+	mux.HandleFunc("/api/bundles/approve", srv.webAuth(srv.handleApproveBundle))
+	mux.HandleFunc("/api/bundles/regenerate", srv.webAuth(srv.handleRegenerateBundle))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -385,6 +391,8 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	caption := r.FormValue("caption")
 	styleID := r.FormValue("style_id")
+	bundleID := r.FormValue("bundle_id")
+	order, _ := strconv.Atoi(r.FormValue("order"))
 
 	ext := strings.ToLower(filepath.Ext(handler.Filename))
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
@@ -414,6 +422,8 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		PreviewURL: fmt.Sprintf("%s/media/%s", s.baseURL, fileName),
 		Caption:    caption,
 		StyleID:    styleID,
+		BundleID:   bundleID,
+		Order:      order,
 		CreatedAt:  time.Now(),
 	}
 
@@ -515,6 +525,23 @@ func (s *Server) handlePublish(w http.ResponseWriter, r *http.Request) {
 		caption = targets[0].Caption
 	}
 
+	mediaID, err := s.publishDrafts(targets, caption)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":   "published",
+		"media_id": mediaID,
+	})
+}
+
+// publishDrafts posts the drafts (in order) as a single photo or a carousel, then removes them.
+func (s *Server) publishDrafts(targets []*Draft, caption string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
@@ -536,10 +563,7 @@ func (s *Server) handlePublish(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Instagram publish error: %v", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
+		return "", err
 	}
 
 	log.Printf("🎉 Instagram published successfully! Media ID: %s", mediaID)
@@ -566,12 +590,7 @@ func (s *Server) handlePublish(w http.ResponseWriter, r *http.Request) {
 	s.drafts = newDrafts
 	s.saveDrafts()
 	s.mu.Unlock()
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"status":   "published",
-		"media_id": mediaID,
-	})
+	return mediaID, nil
 }
 
 func (s *Server) loadDrafts() {
