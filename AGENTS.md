@@ -16,7 +16,11 @@
 - 발행은 실제 인스타 계정에 올라간다. 테스트할 때는 인스타 인증 정보 없이 서버를 띄울 것(`.env`가 없는 폴더에서 실행).
 
 ## 배포 (중요)
-- **태그를 푸시하면 자동 배포된다.** GitHub 웹훅 → 오라클 서버의 `oci-webserver/webhook/deploy-tag.sh` → 해당 태그 체크아웃 → `build.sh insta-publisher` → `up.sh`. 예: `git tag v1.0.8 && git push origin v1.0.8`
+- **배포는 태그 두 개로 한다.** GitHub 웹훅은 **`oci-webserver` 저장소에만** 등록되어 있다(이 저장소에 태그만 올리면 아무 일도 일어나지 않는다).
+  1. 이 저장소(insta-publisher)에 버전 태그: `git tag v1.0.8 && git push origin v1.0.8`
+  2. **oci-webserver** 저장소에 `insta-publisher-<같은 버전>` 태그: `git tag insta-publisher-v1.0.8 && git push origin insta-publisher-v1.0.8`
+  → 웹훅 → 서버의 `webhook/deploy-tag.sh` → `services/insta-publisher`에서 `v1.0.8` 체크아웃 → `build.sh insta-publisher` → `up.sh`. 다른 서비스는 건드리지 않는다.
+  - 배포 로그(서버): `sudo journalctl -u oci-webhook -f`
 - 서버 빌드 명령(`oci-webserver/services.sh`)이 **파일을 하나씩 지정**한다: `cmd/server/main.go sse.go styles.go security.go`. **`cmd/server`에 새 .go 파일을 만들면 배포가 깨진다.** 새 코드는 이 네 파일 중 하나에 넣는다.
 - 프론트엔드는 서버에서 빌드하지 않는다. **`npm run build` 결과(`cmd/server/web/static`)를 커밋해야** 반영된다.
 - 태그를 올리기 전에 반드시 서버와 같은 명령으로 확인한다:
